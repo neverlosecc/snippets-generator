@@ -2,16 +2,17 @@ from . import *
 import requests
 import logging
 import json
+import pathlib
 
 
 logging.basicConfig(level=logging.INFO)
 
 config = {}
-with open("./config.json", "r") as f:
+with open(str(pathlib.Path(__file__).parent / "config.json"), "r") as f:
     config = json.loads(f.read())
 
 
-base_file_url = "https://raw.githubusercontent.com/{}}/{}/master/".format(config["owner"], config["repo"])
+base_file_url = "https://raw.githubusercontent.com/{}/{}/master/".format(config["owner"], config["repo"])
 tree = requests.get("https://api.github.com/repos/{}/{}/git/trees/master?recursive=1"
                     .format(config["owner"], config["repo"]))
 tree = tree.json()["tree"]
