@@ -1,14 +1,14 @@
 from . import *
 import requests
 import logging
+import json
 
 
 logging.basicConfig(level=logging.INFO)
 
-config = {
-    "owner": "neverlosecc",
-    "repo": "api-documentation"
-}
+config = {}
+with open("./config.json", "r") as f:
+    config = json.loads(f.read())
 
 
 base_file_url = "https://raw.githubusercontent.com/{}}/{}/master/".format(config["owner"], config["repo"])
