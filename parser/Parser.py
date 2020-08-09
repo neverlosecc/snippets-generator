@@ -9,43 +9,52 @@ class Parser:
     """ MD documentation parser """
 
     @staticmethod
-    def parse_function(global_name: str, function_content: list) -> Snippet:
+    def parse_function(global_name: str, function_content: list) -> list:
         """
         Parsing function to Snippet instance
         :param global_name: Global name of the table
-        :param function_content: Splitted content from documentation, only function content
-        :return: Snippet instance
+        :param function_content: Splitted content from documentation, only field/function content
+        :return: List of snippets/fields
         """
 
-        logging.debug("Parsing new function from table ", global_name)
+        logging.debug("Parsing new function from table %s", global_name)
 
         state = {
             "parsed_function_name": False,
             "parsing_params": False,
-            "parsing_ret_val": False
+            "parsing_ret_val": False,
+            "parsing_fields": False
         }
-        snippet = Snippet()
-        snippet.table = global_name
+
+        return_values = {
+            "snippet": Snippet(),
+            "fields": []
+        }
+        return_values["snippet"].table = global_name
 
         for line in function_content:
+            if "Fields:" in line:
+                state["parsed_function_name"] = True
             if not state["parsed_function_name"]:
                 # Is it safe? Prob not
                 if "##" not in line:
                     continue
-                snippet.method = str(line.split("##")[1])  # str() only because PyCharm told me to do that
-                if snippet.method.startswith(" "):
-                    snippet.method = snippet.method[1:]
+                return_values["snippet"].method = str(line.split("##")[1])  # str() only because PyCharm told me to
+                # do that
+                if return_values["snippet"].method.startswith(" "):
+                    return_values["snippet"].method = return_values["snippet"].method[1:]
                 state["parsed_function_name"] = True
-                logging.info("Processing method %s", snippet.method)
+                # logging.info("Processing method %s", return_values["snippet"].method)
                 continue
 
-            if state["parsing_params"] or state["parsing_ret_val"]:
+            if state["parsing_params"] or state["parsing_ret_val"] or state["parsing_fields"]:
                 # Filter out table header
                 if ":-" in line or ("Name" in line and "Type" in line):
                     continue
                 if "###" in line or "{%" in line or "```" in line or "##" in line:
                     state["parsing_params"] = False
                     state["parsing_ret_val"] = False
+                    state["parsing_fields"] = False
                 else:
                     params = line.split("|")
                     if len(params) < 4:
@@ -60,18 +69,31 @@ class Parser:
                         param.is_optional = Utils.clear_table_value(params[4]) == "-"
 
                     if state["parsing_params"]:
-                        snippet.parameters.append(param)
+                        return_values["snippet"].parameters.append(param)
                         logging.debug("Inserting new parameter %s", param.name)
-                    else:
-                        snippet.return_type = param
+                    elif state["parsing_ret_val"]:
+                        return_values["snippet"].return_type = param
                         logging.debug("Setting return type %s", param.name)
+                    elif state["parsing_fields"]:
+                        field = Field()
+                        field.table = global_name
+                        field.field_name = param.name
+                        field.field_description = param.description
+                        return_values["fields"].append(field)
 
             if "Parameters:" in line:
                 state["parsing_params"] = True
             if "return value" in line.lower():
                 state["parsing_ret_val"] = True
+            if "Fields:" in line:
+                state["parsing_fields"] = True
 
-        return snippet
+        ret = []
+        if return_values["snippet"].method != "":
+            ret.append(return_values["snippet"])
+        if len(return_values["fields"]) > 0:
+            ret = [*ret, *return_values["fields"]]
+        return ret
 
     @staticmethod
     def parse_content(file_name: str, md_file_content: str, is_table: bool = False) -> None:
@@ -88,11 +110,15 @@ class Parser:
         current_func = list()
         state = {
             "found_functions_list": False,
+            "found_fields_list": False,
             "parsing_global_name": False
         }
 
         for line in md_file_content.splitlines():
-            if not state["found_functions_list"]:
+            if not state["found_functions_list"] and not state["found_fields_list"]:
+
+                gname_wasnt_found = global_name == "ERR_SOMETHING_WENT_WRONG"
+
                 if not is_table:
                     if line.startswith("{% hint style=\"info\" %}"):
                         state["parsing_global_name"] = True
@@ -110,10 +136,20 @@ class Parser:
                         if global_name.startswith(" "):
                             global_name = global_name[1:]
                         state["parsing_global_name"] = True
-                        logging.info("Parsing %s from %s", global_name, file_name)
-                if "##" in line.lower() and "functions" in line.lower():
+
+                if gname_wasnt_found and global_name != "ERR_SOMETHING_WENT_WRONG":
+                    logging.info("Parsing %s from %s", global_name, file_name)
+
+                should_continue = True
+
+                if "##" in line and "Functions" in line:
                     state["found_functions_list"] = True
-                continue
+                if "##" in line and "Fields" in line:
+                    state["found_fields_list"] = True
+                    should_continue = False
+
+                if should_continue:
+                    continue
 
             if global_name == "ERR_SOMETHING_WENT_WRONG":
                 logging.warning("Global name wasn't found for file %s", file_name)
@@ -128,5 +164,8 @@ class Parser:
             else:
                 current_func.append(line)
 
+        if len(current_func) > 0:
+            functions.append(current_func)
+
         for func in functions:
-            Storage.get().insert_one(Parser.parse_function(global_name, func))
+            Storage.get().insert_many(*Parser.parse_function(global_name, func))

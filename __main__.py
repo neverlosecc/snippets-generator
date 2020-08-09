@@ -7,7 +7,6 @@ import pathlib
 
 logging.basicConfig(level=logging.INFO)
 
-config = {}
 with open(str(pathlib.Path(__file__).parent / "config.json"), "r") as f:
     config = json.loads(f.read())
 

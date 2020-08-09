@@ -15,20 +15,43 @@ class Storage:
         return Storage.__instance__
 
     def __init__(self):
-        self.__list = []
+        self._snippets = []
+        self._fields = []
 
-    def get_all(self) -> list:
+    def get_snippets(self) -> list:
         """
         Returns all snippets
         :return: list of Snippet
         """
-        return self.__list
+        return self._snippets
 
-    def insert_one(self, snippet: Snippet) -> None:
+    def get_fields(self) -> list:
         """
-        Inserting new snippet to self.__list
-        :param snippet: Snippet instance
+        Returns all fields
+        :return: list of Field
+        """
+        return self._fields
+
+    def insert_one(self, value: Snippet or Field) -> None:
+        """
+        Inserting new snippet or field to storage
+        :param value: Snippet or Field instance
         :return: None
         """
-        self.__list.append(snippet)
-        logging.debug("Inserting new snippet %s.%s", snippet.table, snippet.method)
+        if isinstance(value, Snippet):
+            logging.debug("Inserting new snippet: %s.%s", value.table, value.method)
+            self._snippets.append(value)
+        elif isinstance(value, Field):
+            logging.debug("Inserting new field: %s.%s", value.table, value.field_name)
+            self._fields.append(value)
+        else:
+            logging.error("Value type wasn't Snippet or Field")
+
+    def insert_many(self, *args) -> None:
+        """
+        Inserting multiply snippets/fields to storage
+        :param args: Values
+        :return: None
+        """
+        for val in args:
+            self.insert_one(val)

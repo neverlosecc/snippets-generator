@@ -6,7 +6,7 @@ from ..storage import *
 
 
 class Generator:
-    """ Singleton class Generator, needed to save all parsed functions from documentation """
+    """ Singleton class Generator, needed to save all parsed snippets/fields from documentation """
 
     __instance__ = None
 
@@ -25,10 +25,19 @@ class Generator:
 
     def generate(self) -> None:
         """
-        Filling self.generated field with serialized Snippet objects
+        Filling self.generated field with serialized Snippet and Field objects
         :return: None
         """
-        for snippet in Storage.get().get_all():
+        for field in Storage.get().get_fields():
+            body = field.table + "." + field.field_name
+            self.generated[body] = {
+                "prefix": body,
+                "body": [
+                    body
+                ],
+                "description": field.field_description
+            }
+        for snippet in Storage.get().get_snippets():
             args = ""
             arg_idx = 1
             for arg in snippet.parameters:
@@ -49,8 +58,19 @@ class Generator:
                 ]
             }
             if snippet.return_type.type != "":
-                self.generated[full_method]["description"] = "Returns " + snippet.return_type.description + " ( " + \
-                                                             snippet.return_type.type + " )"
+                description_text = "Returns "
+                found_description = False
+                if snippet.return_type.description not in ["", " "]:
+                    description_text += snippet.return_type.description
+                    found_description = True
+
+                if found_description:
+                    description_text += " ( %s )" % snippet.return_type.type
+                else:
+                    # https://docs.neverlose.cc/developers/tables/antiaim#getcurrentrealrotation
+                    description_text += snippet.return_type.type + (" ( %s )" % snippet.return_type.name)
+
+                self.generated[full_method]["description"] = description_text
 
     def write(self, file_name) -> None:
         """
@@ -58,6 +78,6 @@ class Generator:
         :param file_name: File name
         :return: None
         """
-        logging.debug("Dumping serialized content to", file_name)
+        logging.debug("Dumping serialized content to %s", file_name)
         with open(str(pathlib.Path(__file__).parent.parent / file_name), "w") as f:
             f.write(json.dumps(self.generated, indent=4))
