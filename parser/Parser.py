@@ -96,7 +96,7 @@ class Parser:
         return ret
 
     @staticmethod
-    def parse_content(file_name: str, md_file_content: str, is_table: bool = False) -> None:
+    def parse_content(file_name: str, md_file_content: str, is_table: bool = False, table_name: str = None) -> None:
         """
         Parsing all file content. Content -> splitted parts of functions -> Parser.parse_function for all parts
         :param file_name: File name on the git (used only for debugging)
@@ -106,6 +106,8 @@ class Parser:
         """
 
         global_name = "ERR_SOMETHING_WENT_WRONG"
+        if table_name:
+            global_name = table_name
         functions = list()
         current_func = list()
         state = {
@@ -127,7 +129,7 @@ class Parser:
                         if len(params) >= 4:
                             state["parsing_global_name"] = False
                             global_name = params[3]
-                else:
+                elif global_name == "ERR_SOMETHING_WENT_WRONG":
                     if not state["parsing_global_name"]:
                         try:
                             global_name = line.split("##")[1]
