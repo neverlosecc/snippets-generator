@@ -1,5 +1,4 @@
 class Utils:
-
     @staticmethod
     def clear_table_value(value) -> str:
         """

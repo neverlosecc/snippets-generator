@@ -1,5 +1,3 @@
-
-
 class Field:
     """ Field object, used to store table fields (like CGlobalVarsBase) """
 

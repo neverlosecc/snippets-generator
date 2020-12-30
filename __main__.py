@@ -5,7 +5,7 @@ import json
 import pathlib
 
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.WARN)
 
 with open(str(pathlib.Path(__file__).parent / "config.json"), "r") as f:
     config = json.loads(f.read())
@@ -18,9 +18,15 @@ for addition_key in config["additions"].keys():
         additions[addition] = addition_key
 
 
-base_file_url = "https://raw.githubusercontent.com/{}/{}/master/".format(config["owner"], config["repo"])
-tree = requests.get("https://api.github.com/repos/{}/{}/git/trees/master?recursive=1"
-                    .format(config["owner"], config["repo"]))
+base_file_url = "https://raw.githubusercontent.com/{}/{}/master/".format(
+    config["owner"], config["repo"]
+)
+tree = requests.get(
+    "https://api.github.com/repos/{}/{}/git/trees/master?recursive=1".format(
+        config["owner"], config["repo"]
+    ),
+    headers={"Cache-Control": "no-cache"},
+)
 tree = tree.json()["tree"]
 
 files = []
@@ -42,15 +48,28 @@ for file in tree:
     else:
         for key in additions.keys():
             if key in file["path"]:
-                files.append({"path": file["path"], "is_table": True, "table_name": additions[key]})
+                files.append(
+                    {
+                        "path": file["path"],
+                        "is_table": True,
+                        "table_name": additions[key],
+                    }
+                )
 
 for file in files:
-    if "c_base" in file["path"] or "igameevent" in file["path"]:  # TODO: Fix globalname searcher to avoid this checks
+    if (
+        "c_base" in file["path"] or "igameevent" in file["path"]
+    ):  # TODO: Fix globalname searcher to avoid this checks
         continue
     tbl_name = None
     if "table_name" in file.keys():
         tbl_name = file["table_name"]
-    Parser.parse_content(file["path"], requests.get(base_file_url + file["path"]).text, file["is_table"], tbl_name)
+    Parser.parse_content(
+        file["path"],
+        requests.get(base_file_url + file["path"]).text,
+        file["is_table"],
+        tbl_name,
+    )
 
 Generator.get().generate()
 Generator.get().write("output.json")

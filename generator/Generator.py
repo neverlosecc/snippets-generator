@@ -32,10 +32,8 @@ class Generator:
             body = field.table + "." + field.field_name
             self.generated[body] = {
                 "prefix": body,
-                "body": [
-                    body
-                ],
-                "description": field.field_description
+                "body": [body],
+                "description": field.field_description,
             }
         for snippet in Storage.get().get_snippets():
             args = ""
@@ -53,9 +51,7 @@ class Generator:
 
             self.generated[full_method] = {
                 "prefix": full_method,
-                "body": [
-                    full_method + "(" + args + ")"
-                ]
+                "body": [full_method + "(" + args + ")"],
             }
             if snippet.return_type.type != "":
                 description_text = "Returns "
@@ -68,7 +64,9 @@ class Generator:
                     description_text += " ( %s )" % snippet.return_type.type
                 else:
                     # https://docs.neverlose.cc/developers/tables/antiaim#getcurrentrealrotation
-                    description_text += snippet.return_type.type + (" ( %s )" % snippet.return_type.name)
+                    description_text += snippet.return_type.type + (
+                        " ( %s )" % snippet.return_type.name
+                    )
 
                 self.generated[full_method]["description"] = description_text
 

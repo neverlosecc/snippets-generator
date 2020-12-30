@@ -23,13 +23,10 @@ class Parser:
             "parsed_function_name": False,
             "parsing_params": False,
             "parsing_ret_val": False,
-            "parsing_fields": False
+            "parsing_fields": False,
         }
 
-        return_values = {
-            "snippet": Snippet(),
-            "fields": []
-        }
+        return_values = {"snippet": Snippet(), "fields": []}
         return_values["snippet"].table = global_name
 
         for line in function_content:
@@ -39,15 +36,23 @@ class Parser:
                 # Is it safe? Prob not
                 if "##" not in line:
                     continue
-                return_values["snippet"].method = str(line.split("##")[1])  # str() only because PyCharm told me to
+                return_values["snippet"].method = str(
+                    line.split("##")[1]
+                )  # str() only because PyCharm told me to
                 # do that
                 if return_values["snippet"].method.startswith(" "):
-                    return_values["snippet"].method = return_values["snippet"].method[1:]
+                    return_values["snippet"].method = return_values["snippet"].method[
+                        1:
+                    ]
                 state["parsed_function_name"] = True
                 # logging.info("Processing method %s", return_values["snippet"].method)
                 continue
 
-            if state["parsing_params"] or state["parsing_ret_val"] or state["parsing_fields"]:
+            if (
+                state["parsing_params"]
+                or state["parsing_ret_val"]
+                or state["parsing_fields"]
+            ):
                 # Filter out table header
                 if ":-" in line or ("Name" in line and "Type" in line):
                     continue
@@ -58,7 +63,9 @@ class Parser:
                 else:
                     params = line.split("|")
                     if len(params) < 4:
-                        logging.error("Table parameters was incorrect - %s", str(params))
+                        logging.error(
+                            "Table parameters was incorrect - %s", str(params)
+                        )
                         raise Exception("Table parameters was incorrect")
 
                     param = SnippetParameter()
@@ -96,7 +103,12 @@ class Parser:
         return ret
 
     @staticmethod
-    def parse_content(file_name: str, md_file_content: str, is_table: bool = False, table_name: str = None) -> None:
+    def parse_content(
+        file_name: str,
+        md_file_content: str,
+        is_table: bool = False,
+        table_name: str = None,
+    ) -> None:
         """
         Parsing all file content. Content -> splitted parts of functions -> Parser.parse_function for all parts
         :param file_name: File name on the git (used only for debugging)
@@ -113,7 +125,7 @@ class Parser:
         state = {
             "found_functions_list": False,
             "found_fields_list": False,
-            "parsing_global_name": False
+            "parsing_global_name": False,
         }
 
         for line in md_file_content.splitlines():
@@ -122,7 +134,7 @@ class Parser:
                 gname_wasnt_found = global_name == "ERR_SOMETHING_WENT_WRONG"
 
                 if not is_table:
-                    if line.startswith("{% hint style=\"info\" %}"):
+                    if line.startswith('{% hint style="info" %}'):
                         state["parsing_global_name"] = True
                     if state["parsing_global_name"]:
                         params = line.split("`")
