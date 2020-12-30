@@ -7,6 +7,10 @@ import pathlib
 
 logging.basicConfig(level=logging.WARN)
 
+
+session = requests.Session()
+session.headers = {"Cache-Control": "no-cache"}
+
 with open(str(pathlib.Path(__file__).parent / "config.json"), "r") as f:
     config = json.loads(f.read())
 
@@ -21,11 +25,10 @@ for addition_key in config["additions"].keys():
 base_file_url = "https://raw.githubusercontent.com/{}/{}/master/".format(
     config["owner"], config["repo"]
 )
-tree = requests.get(
+tree = session.get(
     "https://api.github.com/repos/{}/{}/git/trees/master?recursive=1".format(
         config["owner"], config["repo"]
     ),
-    headers={"Cache-Control": "no-cache"},
 )
 tree = tree.json()["tree"]
 
@@ -66,7 +69,7 @@ for file in files:
         tbl_name = file["table_name"]
     Parser.parse_content(
         file["path"],
-        requests.get(base_file_url + file["path"]).text,
+        session.get(base_file_url + file["path"]).text,
         file["is_table"],
         tbl_name,
     )
