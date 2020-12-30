@@ -29,7 +29,7 @@ class Generator:
         :return: None
         """
         for field in Storage.get().get_fields():
-            body = field.table + "." + field.field_name
+            body = f"{field.table}{'.' if not field.is_ptr else ':'}{field.field_name}"
             self.generated[body] = {
                 "prefix": body,
                 "body": [body],
@@ -46,7 +46,9 @@ class Generator:
                 arg_idx += 1
             args = args[:-2]
 
-            full_method = snippet.table + "." + snippet.method
+            full_method = (
+                f"{snippet.table}{'.' if not snippet.is_ptr else ':'}{snippet.method}"
+            )
             logging.debug("Serializing %s", full_method)
 
             self.generated[full_method] = {

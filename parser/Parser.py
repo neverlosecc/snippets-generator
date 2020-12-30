@@ -9,11 +9,14 @@ class Parser:
     """ MD documentation parser """
 
     @staticmethod
-    def parse_function(global_name: str, function_content: list) -> list:
+    def parse_function(
+        global_name: str, function_content: list, is_ptr: bool = False
+    ) -> list:
         """
         Parsing function to Snippet instance
         :param global_name: Global name of the table
         :param function_content: Splitted content from documentation, only field/function content
+        :param is_ptr: Is table is a pointer to a class instance, if true : else .
         :return: List of snippets/fields
         """
 
@@ -28,6 +31,7 @@ class Parser:
 
         return_values = {"snippet": Snippet(), "fields": []}
         return_values["snippet"].table = global_name
+        return_values["snippet"].is_ptr = is_ptr
 
         for line in function_content:
             if "Fields:" in line:
@@ -86,6 +90,7 @@ class Parser:
                         field.table = global_name
                         field.field_name = param.name
                         field.field_description = param.description
+                        field.is_ptr = is_ptr
                         return_values["fields"].append(field)
 
             if "Parameters:" in line:
@@ -182,4 +187,6 @@ class Parser:
             functions.append(current_func)
 
         for func in functions:
-            Storage.get().insert_many(*Parser.parse_function(global_name, func))
+            Storage.get().insert_many(
+                *Parser.parse_function(global_name, func, not is_table)
+            )

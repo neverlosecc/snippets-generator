@@ -67,6 +67,7 @@ for file in files:
     tbl_name = None
     if "table_name" in file.keys():
         tbl_name = file["table_name"]
+
     Parser.parse_content(
         file["path"],
         session.get(base_file_url + file["path"]).text,

@@ -5,3 +5,4 @@ class Field:
         self.table = ""
         self.field_name = ""
         self.field_description = ""
+        self.is_ptr = False

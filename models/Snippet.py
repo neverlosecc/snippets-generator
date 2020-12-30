@@ -9,3 +9,4 @@ class Snippet:
         self.method = ""
         self.parameters = list()
         self.return_type = SnippetParameter()
+        self.is_ptr = False
