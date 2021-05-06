@@ -5,7 +5,7 @@ import json
 import pathlib
 
 
-logging.basicConfig(level=logging.WARN)
+logging.basicConfig(level=logging.INFO)
 
 
 session = requests.Session()
@@ -61,7 +61,7 @@ for file in tree:
 
 for file in files:
     if (
-        "c_base" in file["path"] or "igameevent" in file["path"]
+        "c_base" in file["path"] or "IGameEvent" in file["path"] or "ConVar" in file["path"]
     ):  # TODO: Fix globalname searcher to avoid this checks
         continue
     tbl_name = None

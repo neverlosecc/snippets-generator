@@ -119,6 +119,7 @@ class Parser:
         :param file_name: File name on the git (used only for debugging)
         :param md_file_content: Full markdown content of the file
         :param is_table: Is it a table, if true function wouldn't search for global instance
+        :param table_name: Global table name ( if known )
         :return: None
         """
 
