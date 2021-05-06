@@ -1,6 +1,6 @@
 import json
-import pathlib
 import logging
+import pathlib
 
 from ..storage import *
 
@@ -67,7 +67,7 @@ class Generator:
                 else:
                     # https://docs.neverlose.cc/developers/tables/antiaim#getcurrentrealrotation
                     description_text += snippet.return_type.type + (
-                        " ( %s )" % snippet.return_type.name
+                            " ( %s )" % snippet.return_type.name
                     )
 
                 self.generated[full_method]["description"] = description_text

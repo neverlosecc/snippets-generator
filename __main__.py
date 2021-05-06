@@ -1,12 +1,10 @@
-from . import *
-import requests
-import logging
 import json
+import logging
 import pathlib
 
+import requests
 
 logging.basicConfig(level=logging.INFO)
-
 
 session = requests.Session()
 session.headers = {"Cache-Control": "no-cache"}
@@ -14,13 +12,11 @@ session.headers = {"Cache-Control": "no-cache"}
 with open(str(pathlib.Path(__file__).parent / "config.json"), "r") as f:
     config = json.loads(f.read())
 
-
 additions = {}
 for addition_key in config["additions"].keys():
     addition_value = config["additions"][addition_key]
     for addition in addition_value:
         additions[addition] = addition_key
-
 
 base_file_url = "https://raw.githubusercontent.com/{}/{}/master/".format(
     config["owner"], config["repo"]
@@ -61,7 +57,7 @@ for file in tree:
 
 for file in files:
     if (
-        "c_base" in file["path"] or "IGameEvent" in file["path"] or "ConVar" in file["path"]
+            "c_base" in file["path"] or "IGameEvent" in file["path"] or "ConVar" in file["path"]
     ):  # TODO: Fix globalname searcher to avoid this checks
         continue
     tbl_name = None

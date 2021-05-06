@@ -1,6 +1,6 @@
-from ..models import *
-
 import logging
+
+from ..models import *
 
 
 class Storage:

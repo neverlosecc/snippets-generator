@@ -1,9 +1,9 @@
 {
-    "owner": "neverlosecc",
-    "repo": "api-documentation",
-    "additions": {
-        "cheat": [
-            "other/custommenu.md"
-        ]
-    }
+  "owner": "neverlosecc",
+  "repo": "api-documentation",
+  "additions": {
+    "cheat": [
+      "other/custommenu.md"
+    ]
+  }
 }

@@ -1,8 +1,8 @@
-from ..storage import *
-from ..models import *
-from ..utilities import *
-
 import logging
+
+from ..models import *
+from ..storage import *
+from ..utilities import *
 
 
 class Parser:
@@ -10,7 +10,7 @@ class Parser:
 
     @staticmethod
     def parse_function(
-        global_name: str, function_content: list, is_ptr: bool = False
+            global_name: str, function_content: list, is_ptr: bool = False
     ) -> list:
         """
         Parsing function to Snippet instance
@@ -46,16 +46,16 @@ class Parser:
                 # do that
                 if return_values["snippet"].method.startswith(" "):
                     return_values["snippet"].method = return_values["snippet"].method[
-                        1:
-                    ]
+                                                      1:
+                                                      ]
                 state["parsed_function_name"] = True
                 # logging.info("Processing method %s", return_values["snippet"].method)
                 continue
 
             if (
-                state["parsing_params"]
-                or state["parsing_ret_val"]
-                or state["parsing_fields"]
+                    state["parsing_params"]
+                    or state["parsing_ret_val"]
+                    or state["parsing_fields"]
             ):
                 # Filter out table header
                 if ":-" in line or ("Name" in line and "Type" in line):
@@ -109,10 +109,10 @@ class Parser:
 
     @staticmethod
     def parse_content(
-        file_name: str,
-        md_file_content: str,
-        is_table: bool = False,
-        table_name: str = None,
+            file_name: str,
+            md_file_content: str,
+            is_table: bool = False,
+            table_name: str = None,
     ) -> None:
         """
         Parsing all file content. Content -> splitted parts of functions -> Parser.parse_function for all parts
