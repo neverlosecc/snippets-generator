@@ -4,6 +4,9 @@ import pathlib
 
 import requests
 
+from . import Generator
+from . import Parser
+
 logging.basicConfig(level=logging.INFO)
 
 session = requests.Session()

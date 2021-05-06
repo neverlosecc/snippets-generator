@@ -90,7 +90,7 @@ class Parser:
                         field.table = global_name
                         field.field_name = param.name
                         field.field_description = param.description
-                        field.is_ptr = is_ptr
+                        field.is_ptr = False
                         return_values["fields"].append(field)
 
             if "Parameters:" in line:
@@ -187,7 +187,5 @@ class Parser:
         if len(current_func) > 0:
             functions.append(current_func)
 
-        for func in functions:
-            Storage.get().insert_many(
-                *Parser.parse_function(global_name, func, not is_table)
-            )
+        result = [Parser.parse_function(global_name, func, not is_table) for func in functions]
+        [Storage.get().insert_many(*chunk) for chunk in result]
