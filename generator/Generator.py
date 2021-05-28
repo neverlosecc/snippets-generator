@@ -5,6 +5,9 @@ import pathlib
 from ..storage import *
 
 
+PREFIX_PREFIX = 'NL: '
+
+
 class Generator:
     """ Singleton class Generator, needed to save all parsed snippets/fields from documentation """
 
@@ -31,15 +34,16 @@ class Generator:
         for field in Storage.get().get_fields():
             body = f"{field.table}{'.' if not field.is_ptr else ':'}{field.field_name}"
             self.generated[body] = {
-                "prefix": body,
-                "body": [body],
+                "prefix": f'{PREFIX_PREFIX}{body}',
+                "body": f'{body}$0',
                 "description": field.field_description,
+                "scope": "lua",
             }
         for snippet in Storage.get().get_snippets():
             args = ""
             arg_idx = 1
             for arg in snippet.parameters:
-                args += "${" + str(arg_idx) + ":" + arg.type + " " + arg.name
+                args += "${" + str(arg_idx) + ":" + arg.name + ": " + arg.type
                 if arg.is_optional:
                     args += " (optional)"
                 args += "}, "
@@ -52,8 +56,9 @@ class Generator:
             logging.debug("Serializing %s", full_method)
 
             self.generated[full_method] = {
-                "prefix": full_method,
-                "body": [full_method + "(" + args + ")"],
+                "prefix": f'{PREFIX_PREFIX}{full_method}',
+                "body": full_method + "(" + args + ")$0",
+                "scope": "lua",
             }
             if snippet.return_type.type != "":
                 description_text = "Returns "
